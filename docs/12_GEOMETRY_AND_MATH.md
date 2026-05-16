@@ -85,6 +85,8 @@ Where:
 This produces a translated set of parallel boundary lines used to reconstruct
 the tolerance polygon.
 
+![Parallel offset reconstruction](assets/geometry_parallel_offset_computed.svg)
+
 ---
 
 ## Vertex Reconstruction
@@ -227,6 +229,8 @@ $$
 
 thereby maintaining a clean inactive environmental background.
 
+![Heatmap logarithmic compression](assets/heatmap_log_compression.svg)
+
 ---
 
 ## 3. Occupancy Score and Multimodal Fusion
@@ -325,6 +329,8 @@ Where:
 
 This prevents temporary occlusions, pose changes, or transient confidence drops
 from immediately collapsing the environmental occupancy state.
+
+![Temporal hysteresis and debouncing](assets/temporal_hysteresis_debouncing_v2.svg)
 
 ---
 
