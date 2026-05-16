@@ -2,36 +2,46 @@
 
 ## Overview
 
-This module documents the mathematical, geometric, and probabilistic apparatus
-used by Vesper Vision for video-space normalization, zone tolerance computation,
-heatmap compression, occupancy scoring, and state fusion.
+This module documents the mathematical, geometric, probabilistic, and temporal
+reasoning layers used by Vesper Vision for environmental interpretation,
+occupancy supervision, spatial normalization, tolerance generation, heatmap
+compression, and multimodal state fusion.
 
-The objective is not to provide a heavy camera-calibration pipeline, but to
-describe a deterministic and explainable geometric layer suitable for contextual
-environmental perception.
+The architecture intentionally prioritizes deterministic and explainable
+mathematical models over opaque black-box geometric reconstruction systems.
+
+The described methods are designed for lightweight environmental cognition and
+continuous runtime supervision rather than full photogrammetric reconstruction.
 
 ---
 
 ## 1. Geometric Transformation and Zone Tolerance
 
-To reduce the practical impact of perspective distortion without introducing
-expensive camera calibration procedures, Vesper Vision may apply deterministic
-geometry based on polygonal zone definitions and parallel-edge offsetting.
+To reduce the practical impact of lens perspective distortion without requiring
+heavy camera calibration pipelines, Vesper Vision applies deterministic polygon
+geometry and parallel-edge offset reconstruction.
 
-Each environmental zone is represented as a normalized polygon:
+Each supervised environmental region is represented as a normalized polygon:
 
 $$
-P = \{(x_1, y_1), (x_2, y_2), \dots, (x_n, y_n)\}
-\quad \text{with} \quad x_i, y_i \in [0, 1]
+P =
+\{
+(x_1, y_1),
+(x_2, y_2),
+\dots,
+(x_n, y_n)
+\}
+\quad \text{with} \quad
+x_i, y_i \in [0,1]
 $$
 
-Where each vertex is expressed in normalized video coordinates.
+Where each vertex is expressed in normalized video-space coordinates.
 
 ---
 
-## Parallel Offset Method
+## Parallel Offset Reconstruction
 
-For each segment \(S_i\) passing through:
+For each polygon segment \(S_i\) passing through:
 
 $$
 A(x_i, y_i)
@@ -39,7 +49,7 @@ A(x_i, y_i)
 B(x_{i+1}, y_{i+1})
 $$
 
-the corresponding implicit line is defined as:
+the corresponding implicit line representation is:
 
 $$
 ax + by + c = 0
@@ -59,23 +69,28 @@ $$
 c = x_{i+1}y_i - x_i y_{i+1}
 $$
 
-A translated parallel line can then be computed by shifting the constant term:
+To generate tolerance regions around the original polygon, the line is
+translated by a normalized offset margin \(d\):
 
 $$
 c' = c \pm d \sqrt{a^2 + b^2}
 $$
 
-where \(d\) represents the normalized tolerance margin applied around the zone.
+Where:
 
-The sign of the offset depends on the polygon winding direction and on whether
-the tolerance region is intended to expand or contract the original polygon.
+- \(d\) is the normalized tolerance expansion factor.
+- The sign of the offset depends on polygon winding orientation and desired
+  expansion direction.
+
+This produces a translated set of parallel boundary lines used to reconstruct
+the tolerance polygon.
 
 ---
 
 ## Vertex Reconstruction
 
-The translated polygon vertices are obtained by intersecting consecutive
-offset lines.
+The translated polygon vertices are reconstructed analytically through the
+intersection of consecutive translated lines.
 
 Given the system:
 
@@ -92,95 +107,151 @@ $$
 D = a_1b_2 - a_2b_1
 $$
 
-and the reconstructed vertex is:
+The reconstructed coordinates are then obtained through Cramer-style
+deterministic reconstruction:
 
 $$
-x = \frac{b_1c'_2 - b_2c'_1}{D}
+x =
+\frac{
+b_1c'_2 - b_2c'_1
+}{D}
 $$
 
 $$
-y = \frac{c'_1a_2 - c'_2a_1}{D}
+y =
+\frac{
+a_1c'_2 - a_2c'_1
+}{D}
 $$
 
-If \(D\) approaches zero, the two translated lines are nearly parallel and the
-intersection should be treated as geometrically unstable.
+If:
+
+$$
+D \approx 0
+$$
+
+the translated lines become numerically unstable or nearly parallel and the
+intersection should be treated as geometrically unreliable.
 
 ---
 
 ## Boundary Clamping
 
-Because normalized coordinates must remain inside the video frame, each
-computed vertex \((x', y')\) is projected back into the unit square:
+Because all environmental coordinates must remain inside the normalized video
+domain, each reconstructed vertex:
 
 $$
-x_{\text{final}} = \max(0, \min(1, x'))
+(x', y')
+$$
+
+is projected back into the unit square:
+
+$$
+x_{\text{final}} =
+\max(0,\min(1,x'))
 $$
 
 $$
-y_{\text{final}} = \max(0, \min(1, y'))
+y_{\text{final}} =
+\max(0,\min(1,y'))
 $$
 
-This keeps all generated tolerance polygons bounded within the valid video
-coordinate space.
+This guarantees that generated tolerance regions remain bounded within the
+valid environmental frame.
 
 ---
 
-## 2. Logarithmic Heatmap Compression
+## 2. Heatmap Compression and Nonlinear Normalization
 
-Footstep and presence heatmaps may suffer from stationary sampling saturation.
+Environmental trajectory heatmaps naturally suffer from stationary sampling
+saturation.
 
-If a person remains in the same area for a long time, raw linear accumulation
-can dominate the visualization and hide smaller movements or short transitions.
+If a tracked subject remains in the same spatial location for an extended
+period of time, linear accumulation causes local intensity domination that may
+hide short transitions, micro-movements, or low-frequency environmental events.
 
-To reduce this effect, Vesper Vision may apply nonlinear logarithmic compression
-using a `log1p`-style transformation:
+To reduce this effect, Vesper Vision applies nonlinear logarithmic compression
+based on normalized `log1p` scaling.
+
+Given a normalized raw environmental intensity:
 
 $$
-I_{\text{comp}}(x, y) =
-\ln \left(1 + \alpha I_{\text{raw}}(x, y)\right)
+I_{\text{norm}}(x,y)
+$$
+
+the compressed intensity becomes:
+
+$$
+I_{\text{comp}}(x,y)
+=
+\frac{
+\ln\left(
+1 + \beta I_{\text{norm}}(x,y)
+\right)
+}{
+\ln(1+\beta)
+}
 $$
 
 Where:
 
-- \(I_{\text{raw}}(x, y)\) is the cumulative raw intensity at a given location.
-- \(\alpha\) is the sampling intensity scale factor.
-- \(I_{\text{comp}}(x, y)\) is the compressed heatmap intensity.
+- \(I_{\text{norm}}(x,y)\) is the normalized environmental accumulation map.
+- \(\beta\) is the logarithmic compression scale factor.
 
-The addition of \(1\) ensures that when no event is present:
+In the current renderer implementation:
 
 $$
-I_{\text{raw}}(x, y) = 0
+\beta = 9.0
+$$
+
+This normalization guarantees:
+
+$$
+I_{\text{comp}}(x,y) \in [0,1]
+$$
+
+while compressing dominant stationary peaks and preserving weaker movement
+patterns.
+
+Additionally, when:
+
+$$
+I_{\text{norm}}(x,y)=0
 $$
 
 the compressed output remains exactly:
 
 $$
-I_{\text{comp}}(x, y) = 0
+I_{\text{comp}}(x,y)=0
 $$
 
-This keeps inactive background regions clean while reducing the dominance of
-high-frequency stationary samples.
+thereby maintaining a clean inactive environmental background.
 
 ---
 
 ## 3. Occupancy Score and Multimodal Fusion
 
-The final occupancy state of a critical region, such as a bed zone, should not
-depend on a single perception signal.
+Critical occupancy decisions should not depend on isolated perception signals.
 
-Instead, Vesper Vision may combine multiple contextual indicators into a
-weighted state-fusion score:
+Instead, Vesper Vision combines multiple contextual environmental indicators
+through a deterministic weighted fusion layer.
+
+The fused occupancy score is defined as:
 
 $$
-S_{\text{bed}} =
-w_{\text{vlm}} P(\text{occ}_{\text{vlm}})
+S_{\text{bed}}
+=
+w_{\text{vlm}}
+P(\text{occ}_{\text{vlm}})
 +
-w_{\text{pose}} \sum_{i=1}^{m} K_i
+w_{\text{pose}}
+\sum_{i=1}^{m} K_i
 +
-w_{\text{obj}} A_j
+w_{\text{obj}}
+A_j
 $$
 
-Subject to the normalization constraint:
+subject to the normalization constraint:
 
 $$
 \sum_k w_k = 1
@@ -188,35 +259,57 @@ $$
 
 Where:
 
-- \(P(\text{occ}_{\text{vlm}})\) is the visual-language occupancy confidence
-  estimated on the target zone or crop.
-- \(K_i\) represents the contribution of inferred human keypoints or skeletal
-  evidence.
-- \(A_j\) represents an object or animal activation factor when relevant.
-- \(w_k\) represents the normalized contribution weight of each signal family.
+- \(P(\text{occ}_{\text{vlm}})\) represents the occupancy confidence extracted
+  from visual-language environmental interpretation.
+- \(K_i\) represents inferred skeletal or keypoint evidence.
+- \(A_j\) represents contextual object or animal activation factors.
+- \(w_k\) represents the normalized contribution weight of each modality.
 
-This formulation is intended as an explainable fusion model rather than an
-opaque black-box classifier.
+This fusion model is intentionally explainable and deterministic rather than an
+opaque black-box environmental classifier.
 
 ---
 
 ## 4. Temporal Hysteresis and Debouncing
 
-To avoid rapid state oscillations, Vesper Vision may apply temporal hysteresis
-between occupied and free states.
+To avoid rapid environmental state oscillations, Vesper Vision applies temporal
+hysteresis between occupied and free states.
 
-A region transitions from `free` to `occupied` only when the occupancy score
-exceeds a high threshold \(T_{\text{high}}\).
-
-The return from `occupied` to `free` requires both a lower threshold
-\(T_{\text{low}}\) and a temporal delay condition.
+A supervised region transitions from `free` to `occupied` only when the fused
+occupancy score exceeds the upper threshold:
 
 $$
-\text{State}_{t} =
+T_{\text{high}}
+$$
+
+The transition back to `free` requires:
+
+- a lower release threshold
+- temporal persistence under the release condition
+
+The resulting state transition model becomes:
+
+$$
+\text{State}_t
+=
 \begin{cases}
-1 & \text{if } S_{\text{bed}} > T_{\text{high}} \\
-0 & \text{if } S_{\text{bed}} < T_{\text{low}} \land \Delta t > T_{\text{delay}} \\
-\text{State}_{t-1} & \text{otherwise}
+1
+&
+\text{if }
+S_{\text{bed}} > T_{\text{high}}
+\\
+\\
+0
+&
+\text{if }
+S_{\text{bed}} < T_{\text{low}}
+\land
+\Delta t > T_{\text{delay}}
+\\
+\\
+\text{State}_{t-1}
+&
+\text{otherwise}
 \end{cases}
 $$
 
@@ -227,47 +320,73 @@ Where:
 - \(S_{\text{bed}}\) is the fused occupancy score.
 - \(T_{\text{high}}\) is the activation threshold.
 - \(T_{\text{low}}\) is the release threshold.
-- \(\Delta t\) is the elapsed time under the release condition.
-- \(T_{\text{delay}}\) is the minimum release delay.
+- \(\Delta t\) is the elapsed release duration.
+- \(T_{\text{delay}}\) is the minimum persistence delay before release.
 
-This prevents short visual occlusions, pose changes, or temporary confidence
-drops from immediately clearing the occupancy state.
+This prevents temporary occlusions, pose changes, or transient confidence drops
+from immediately collapsing the environmental occupancy state.
 
 ---
 
-## 5. Design Constraints
+## Confidence Decay Dynamics
 
-The geometry and fusion layer prioritizes:
+When direct visual evidence becomes unavailable, tracking confidence decays as
+a function of the currently fused environmental state.
 
-- normalized coordinate systems
+If occupancy is currently confirmed, a conservative decay coefficient is used:
+
+$$
+\gamma_{\text{occupied}} = 0.08
+$$
+
+When occupancy is not confirmed, a more aggressive decay coefficient is applied:
+
+$$
+\gamma_{\text{free}} = 0.25
+$$
+
+This asymmetric decay behavior helps preserve stable occupied states during
+short-lived visibility interruptions while allowing free states to recover more
+rapidly from stale environmental evidence.
+
+---
+
+## 5. Runtime Design Constraints
+
+The geometry and mathematical supervision layer intentionally prioritizes:
+
 - deterministic polygon operations
+- normalized coordinate systems
 - bounded tolerance expansion
 - explainable score composition
-- temporal state stability
-- probabilistic occupancy interpretation
+- probabilistic environmental reasoning
+- temporal continuity supervision
 - runtime-safe state transitions
+- lightweight geometric reconstruction
 
-The mathematical layer is intentionally lightweight and designed for practical
-environmental perception rather than full photogrammetric reconstruction.
+The architecture intentionally avoids computationally expensive photogrammetric
+pipelines whenever deterministic approximations are operationally sufficient.
 
 ---
 
 ## 6. Limitations
 
-The described methods remain approximate.
+The described methods remain approximate environmental models.
 
 Accuracy may be affected by:
 
-- camera perspective
-- lens distortion
-- unstable polygon definitions
-- incorrect zone winding
-- partial occlusions
-- ambiguous visual evidence
-- low-confidence keypoint estimation
-- environmental lighting variability
+- camera perspective distortion
+- lens deformation
+- unstable polygon topology
+- incorrect winding orientation
+- environmental occlusions
+- low-confidence skeletal estimation
+- ambiguous environmental evidence
 - overlapping occupancy regions
+- unstable lighting conditions
+- environmental noise
+- incomplete telemetry continuity
 
-The geometry and fusion model should therefore be considered a bounded,
-explainable approximation layer rather than a deterministic source of
-environmental truth.
+The mathematical and geometric layer should therefore be interpreted as a
+bounded and explainable approximation system rather than a deterministic source
+of environmental truth.
