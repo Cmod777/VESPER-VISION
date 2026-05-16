@@ -11,6 +11,8 @@ The architecture does not treat occupancy as a binary event.
 Instead, occupancy is interpreted through probabilistic environmental reasoning
 built upon contextual spatial continuity and multimodal telemetry correlation.
 
+![Occupancy fusion pipeline](assets/occupancy_score_fusion.svg)
+
 ---
 
 ## Occupancy Concepts
@@ -43,6 +45,8 @@ Occupancy states are evaluated continuously through:
 
 Occupancy interpretation is therefore treated as a dynamic environmental state
 rather than a sequence of isolated detections.
+
+![Temporal hysteresis and occupancy stabilization](assets/temporal_hysteresis_debouncing_v2.svg)
 
 ---
 
