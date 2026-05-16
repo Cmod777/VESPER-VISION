@@ -1,0 +1,25 @@
+PolyForm Noncommercial License 1.0.0
+
+Copyright (c) 2026 Advanced Thermal Environment Control System (ATECS)
+
+The software, documentation, architecture descriptions, conceptual models,
+design specifications, diagrams, and associated materials contained in this
+repository are licensed under the PolyForm Noncommercial License 1.0.0.
+
+You may use, study, and share this material for personal, educational,
+research, and noncommercial purposes only.
+
+Commercial use, sublicensing, resale, hosted services, product integration,
+surveillance commercialization, proprietary derivative systems, or monetized
+deployment of this work is prohibited without explicit written permission
+from the copyright holder.
+
+This repository may contain conceptual environmental perception architectures,
+occupancy inference systems, telemetry reasoning models, and spatial cognition
+frameworks intended exclusively for research and architectural exploration.
+
+THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+KIND, EXPRESS OR IMPLIED.
+
+For the full license text, see:
+https://polyformproject.org/licenses/noncommercial/1.0.0/
