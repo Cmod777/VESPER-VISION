@@ -17,6 +17,7 @@ Instead, environmental interpretation is reconstructed through:
 - multimodal telemetry correlation
 - temporal state supervision
 
+![Simulated multiperson spatial perception scene](assets/Simulated_multiperson_scene.png)
 ---
 
 ## Environmental Context
@@ -32,6 +33,8 @@ Spatial interpretation may include:
 
 The architecture prioritizes explainable environmental reasoning over opaque
 black-box classification systems.
+
+![Simulated person detection overlay](assets/Person_detection.png)
 
 ---
 
@@ -63,6 +66,8 @@ Environmental spaces may be divided into logical occupancy regions in order to:
 - supervise bed occupancy zones
 
 Spatial segmentation remains contextual and environment-dependent.
+
+![Simulated bed zone grid](assets/Bed_zone_grid.png)
 
 ---
 
