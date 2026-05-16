@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1800" height="1000" viewBox="0 0 1800 1000" xmlns="http://www.w3.org/2000/svg">
+<style>
+.bg{fill:#fff}
+.title{font:700 38px Arial,Helvetica,sans-serif;fill:#111}
+.h{font:700 24px Arial,Helvetica,sans-serif;fill:#111}
+.t{font:18px Arial,Helvetica,sans-serif;fill:#222}
+.s{font:15px Arial,Helvetica,sans-serif;fill:#333}
+.f{font:italic 23px "Times New Roman",Times,serif;fill:#111}
+.fs{font:italic 19px "Times New Roman",Times,serif;fill:#111}
+.panel{fill:#fafafa;stroke:#ddd;stroke-width:2}
+.orig{stroke:#111;stroke-width:5;fill:none;stroke-linejoin:round;stroke-linecap:round}
+.origDash{stroke:#111;stroke-width:4;fill:none;stroke-dasharray:10 8;stroke-linejoin:round;stroke-linecap:round}
+.off{stroke:#f0a020;stroke-width:5;fill:none;stroke-linejoin:round;stroke-linecap:round}
+.guide{stroke:#777;stroke-width:2;fill:none;stroke-dasharray:7 7}
+.norm{stroke:#1b78d0;stroke-width:4;marker-end:url(#arrBlue)}
+.dim{stroke:#555;stroke-width:3;marker-start:url(#arrGray);marker-end:url(#arrGray)}
+.dot{fill:#111}
+.odot{fill:#f0a020;stroke:#fff;stroke-width:3}
+</style>
+<defs>
+<marker id="arrBlue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+<path d="M0,0 L12,6 L0,12 Z" fill="#1b78d0"/>
+</marker>
+<marker id="arrGray" markerWidth="12" markerHeight="12" refX="6" refY="6" orient="auto">
+<path d="M0,6 L12,0 L9,6 L12,12 Z" fill="#555"/>
+</marker>
+</defs>
+<rect class="bg" width="1800" height="1000"/>
+<text x="900" y="65" text-anchor="middle" class="title">Parallel Offset Reconstruction</text>
+<rect x="55" y="115" width="530" height="780" class="panel"/>
+<rect x="635" y="115" width="530" height="780" class="panel"/>
+<rect x="1215" y="115" width="530" height="780" class="panel"/>
+<text x="320" y="165" text-anchor="middle" class="h">1. Original corner and outward normals</text>
+<line x1="160.00" y1="643.00" x2="254.50" y2="476.50" class="orig"/>
+<line x1="254.50" y1="476.50" x2="412.00" y2="400.00" class="orig"/>
+<circle cx="254.50" cy="476.50" r="8" class="dot"/>
+<text x="266.50" y="464.50" class="f">V(xᵢ,yᵢ)</text>
+<line x1="207.25" y1="559.75" x2="150.72" y2="527.67" class="norm"/>
+<line x1="333.25" y1="438.25" x2="304.85" y2="379.78" class="norm"/>
+<text x="105" y="710" class="fs">L₁: a₁x + b₁y + c₁ = 0</text>
+<text x="105" y="750" class="fs">L₂: a₂x + b₂y + c₂ = 0</text>
+<text x="320" y="835" text-anchor="middle" class="s">The corner is defined by two real adjacent polygon edges.</text>
+<text x="900" y="165" text-anchor="middle" class="h">2. True parallel translation by distance d</text>
+<line x1="789.75" y1="714.25" x2="900.00" y2="520.00" class="origDash"/>
+<line x1="900.00" y1="520.00" x2="1083.75" y2="430.75" class="origDash"/>
+<line x1="979.84" y1="289.99" x2="756.98" y2="682.65" class="off"/>
+<line x1="1071.47" y1="387.69" x2="665.35" y2="584.95" class="off"/>
+<line x1="900.00" y1="520.00" x2="868.41" y2="486.32" class="dim"/>
+<text x="894.2" y="491.2" class="f">d</text>
+<circle cx="868.41" cy="486.32" r="7" class="odot"/>
+<text x="710" y="735" class="fs">c′ = c ± d√(a² + b²)</text>
+<text x="710" y="775" class="fs">L′: ax + by + c′ = 0</text>
+<text x="900" y="835" text-anchor="middle" class="s">Offset edges are computed from the actual implicit line equations.</text>
+<text x="1480" y="165" text-anchor="middle" class="h">3. Reconstructed tolerance polygon</text>
+<polygon points="1323.75,473.35 1408.89,323.34 1559.90,250.00 1636.25,389.23 1587.40,556.11 1417.97,590.00" class="off"/>
+<polygon points="1358.10,470.54 1429.29,345.10 1547.96,287.46 1605.59,392.56 1564.91,531.57 1429.29,558.69" class="origDash"/>
+<circle cx="1408.89" cy="323.34" r="8" class="odot"/>
+<text x="1420.89" y="313.34" class="f">Vₙₑw</text>
+<text x="1305" y="690" class="fs">a₁x + b₁y = −c′₁</text>
+<text x="1305" y="725" class="fs">a₂x + b₂y = −c′₂</text>
+<text x="1305" y="770" class="fs">D = a₁b₂ − a₂b₁</text>
+<text x="1305" y="815" class="fs">x = (b₁c′₂ − b₂c′₁) / D</text>
+<text x="1305" y="850" class="fs">y = (a₂c′₁ − a₁c′₂) / D</text>
+<text x="900" y="955" text-anchor="middle" class="s">Every displayed offset edge and tolerance vertex is computed from the same polygon geometry, not manually sketched.</text>
+</svg>

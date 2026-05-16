@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1700" height="950" viewBox="0 0 1700 950"
+xmlns="http://www.w3.org/2000/svg">
+
+<style>
+.bg { fill:#ffffff; }
+
+.title {
+    font:700 38px Arial;
+    fill:#111111;
+}
+
+.subtitle {
+    font:700 24px Arial;
+    fill:#111111;
+}
+
+.label {
+    font:20px Arial;
+    fill:#222222;
+}
+
+.small {
+    font:16px Arial;
+    fill:#444444;
+}
+
+.formula {
+    font:italic 28px "Times New Roman";
+    fill:#111111;
+}
+
+.box {
+    fill:#fafafa;
+    stroke:#d9d9d9;
+    stroke-width:2;
+    rx:18;
+}
+
+.signal {
+    fill:#f8f8f8;
+    stroke:#bbbbbb;
+    stroke-width:2;
+    rx:14;
+}
+
+.fusion {
+    fill:#fff4df;
+    stroke:#f0a020;
+    stroke-width:3;
+    rx:18;
+}
+
+.output {
+    fill:#eef7ff;
+    stroke:#2d7ff9;
+    stroke-width:3;
+    rx:18;
+}
+
+.arrow {
+    stroke:#666666;
+    stroke-width:4;
+    fill:none;
+    marker-end:url(#arrow);
+}
+
+.logic {
+    fill:#ffffff;
+    stroke:#cccccc;
+    stroke-width:2;
+    rx:16;
+}
+</style>
+
+<defs>
+<marker id="arrow" markerWidth="14" markerHeight="14"
+refX="12" refY="7" orient="auto">
+<path d="M0,0 L14,7 L0,14 Z" fill="#666666"/>
+</marker>
+</defs>
+
+<rect class="bg" width="100%" height="100%"/>
+
+<text x="850" y="70" text-anchor="middle" class="title">
+Occupancy Score and Multimodal Fusion
+</text>
+
+<text x="850" y="130" text-anchor="middle" class="formula">
+S_bed = w_vlm · P(occ_vlm) + w_pose · ΣK_i + w_obj · A_j
+</text>
+
+<text x="850" y="175" text-anchor="middle" class="label">
+Σw_k = 1
+</text>
+
+<!-- INPUT SIGNALS -->
+
+<rect x="120" y="260" width="320" height="120" class="signal"/>
+<text x="280" y="315" text-anchor="middle" class="subtitle">
+VLM confidence
+</text>
+<text x="280" y="350" text-anchor="middle" class="small">
+Visual-language occupancy estimation
+</text>
+
+<rect x="120" y="430" width="320" height="120" class="signal"/>
+<text x="280" y="485" text-anchor="middle" class="subtitle">
+Pose / keypoints
+</text>
+<text x="280" y="520" text-anchor="middle" class="small">
+Human skeletal evidence ΣK_i
+</text>
+
+<rect x="120" y="600" width="320" height="120" class="signal"/>
+<text x="280" y="655" text-anchor="middle" class="subtitle">
+Object / animal
+</text>
+<text x="280" y="690" text-anchor="middle" class="small">
+Contextual activation factor A_j
+</text>
+
+<!-- ARROWS TO FUSION -->
+
+<line x1="440" y1="320" x2="720" y2="430" class="arrow"/>
+<line x1="440" y1="490" x2="720" y2="490" class="arrow"/>
+<line x1="440" y1="660" x2="720" y2="550" class="arrow"/>
+
+<!-- FUSION CORE -->
+
+<rect x="720" y="360" width="340" height="260" class="fusion"/>
+
+<text x="890" y="430" text-anchor="middle" class="subtitle">
+Weighted fusion layer
+</text>
+
+<text x="890" y="495" text-anchor="middle" class="formula">
+S_bed
+</text>
+
+<text x="890" y="545" text-anchor="middle" class="small">
+Deterministic explainable fusion
+</text>
+
+<text x="890" y="580" text-anchor="middle" class="small">
+Multimodal weighted occupancy score
+</text>
+
+<!-- OUTPUT -->
+
+<line x1="1060" y1="490" x2="1280" y2="490" class="arrow"/>
+
+<rect x="1280" y="400" width="300" height="180" class="output"/>
+
+<text x="1430" y="465" text-anchor="middle" class="subtitle">
+Occupancy decision
+</text>
+
+<text x="1430" y="515" text-anchor="middle" class="formula">
+occupied / free
+</text>
+
+<text x="1430" y="555" text-anchor="middle" class="small">
+Contextual supervised state
+</text>
+
+<!-- HYSTERESIS BLOCK -->
+
+<rect x="640" y="760" width="560" height="120" class="logic"/>
+
+<text x="920" y="805" text-anchor="middle" class="subtitle">
+Temporal hysteresis and debouncing
+</text>
+
+<text x="920" y="845" text-anchor="middle" class="small">
+State transitions require threshold persistence and temporal stability
+</text>
+
+<!-- FOOTER -->
+
+<text x="850" y="920" text-anchor="middle" class="small">
+Multiple environmental perception signals are combined into a deterministic and explainable occupancy score.
+</text>
+
+</svg>
