@@ -4,259 +4,463 @@
 
 This module documents the stateful runtime supervision layer used by
 Vesper Vision for continuous environmental occupancy estimation,
-persistent spatial reasoning, semantic region interpretation,
-contextual presence reconstruction, and structured runtime state generation.
+persistent spatial memory mapping, semantic context extraction,
+and structural state fusion.
 
-Unlike isolated frame-based detection pipelines, the architecture maintains
-a continuously evolving environmental interpretation layer capable of
-combining temporal continuity, probabilistic occupancy fusion,
-persistent spatial memory, and semantic environmental context.
+Instead of computing isolated frame-by-frame detections, the runtime
+architecture maintains a continuously evolving environmental hypothesis layer.
 
-The runtime supervision layer is intentionally designed to generate
-interpretable environmental state outputs suitable for external automation,
-contextual supervision, occupancy persistence analysis,
-and multimodal environmental reasoning.
+The system combines:
 
----
+- geometric spatial priors
+- persistent telemetry accumulation
+- semantic region synthesis
+- multi-modal occupancy fusion
+- asymmetric temporal decay
+- runtime state hysteresis
+- contextual environmental continuity
 
-## 1. Stateful Runtime Supervision
+to preserve explainable occupancy supervision even under:
 
-Traditional visual pipelines typically operate as isolated frame analyzers.
+- partial occlusions
+- blanket coverage
+- unstable detections
+- fragmented visibility
+- environmental ambiguity
 
-In contrast, Vesper Vision reconstructs occupancy through continuous runtime
-state supervision.
-
-The architecture continuously evaluates:
-
-- environmental continuity
-- occupancy persistence
-- semantic spatial context
-- probabilistic hidden occupancy
-- multimodal environmental evidence
-- temporal state transitions
-- contextual environmental ambiguity
-
-This allows occupancy estimation to persist even during temporary visual
-instability, partial occlusions, blanket coverage, or fragmented detections.
-
-The runtime state therefore represents an evolving environmental hypothesis
-rather than a single-frame visual snapshot.
+Unlike stateless visual pipelines, the runtime layer models occupancy
+as a persistent environmental reasoning process rather than a single-frame
+classification event.
 
 ---
 
-## 2. Runtime Presence State
+## 1. Persistent Spatial Memory Math
 
-The supervision layer continuously generates structured environmental state
-files intended for external runtime consumption.
+Persistent environmental memory is constructed through continuous telemetry
+accumulation inside the runtime spatial event journal:
 
-Current runtime outputs may include:
+```text
+state/spatial_memory_events.jsonl
+```
+
+Every validated environmental observation generates a normalized spatial
+coordinate:
+
+```math
+p = [x,y]^T \in [0,1]^2
+```
+
+where normalized coordinates are projected directly into the environmental
+spatial memory plane.
+
+Given a historical telemetry sequence:
+
+```math
+E = \{e_1,e_2,\dots,e_N\}
+```
+
+the localized spatial density prior surrounding coordinate `p`
+is computed using a fixed-radius neighbor accumulation model:
+
+```math
+D(p)
+=
+\sum_{i=1}^{N}
+\mathbb{I}
+\left(
+\delta(p,e_i) < R_{prior}
+\right)
+```
+
+where the Euclidean metric is defined as:
+
+```math
+\delta(a,b)
+=
+\sqrt{
+(a_x-b_x)^2 +
+(a_y-b_y)^2
+}
+```
+
+The spatial integration radius:
+
+```math
+R_{prior} = 0.075
+```
+
+defines the maximum local influence boundary used during
+runtime density estimation.
+
+The indicator function:
+
+```math
+\mathbb{I}(\cdot)
+```
+
+returns `1` when the geometric constraint is satisfied
+and `0` otherwise.
+
+The resulting density scalar dynamically injects contextual
+confidence bias into occupancy reasoning pipelines.
+
+---
+
+## 2. Spatial Clustering and Semantic Synthesis
+
+Long-term environmental interaction patterns are transformed into
+persistent semantic regions through sequential geometric clustering.
+
+A coordinate:
+
+```math
+p_i
+```
+
+is aggregated into spatial cluster:
+
+```math
+\mathcal{C}_k
+```
+
+iff:
+
+```math
+\delta(p_i,\mu_k)
+<
+R_{cluster}
+```
+
+where:
+
+```math
+R_{cluster} = 0.065
+```
+
+defines the maximum aggregation radius surrounding
+cluster centroid:
+
+```math
+\mu_k
+```
+
+If no cluster satisfies the geometric constraint,
+a new semantic seed region is generated.
+
+Clusters collecting fewer than:
+
+```math
+M_{min} = 12
+```
+
+validated observations are discarded to suppress
+environmental noise propagation.
+
+The spatial center of mass for validated regions is computed as:
+
+```math
+\mu_k
+=
+\frac{1}{|\mathcal{C}_k|}
+\sum_{p_i \in \mathcal{C}_k}
+p_i
+```
+
+This process allows the runtime layer to progressively reconstruct:
+
+- bed-presence regions
+- kitchen activity areas
+- relaxation zones
+- table interaction regions
+- window interaction corridors
+- movement transition paths
+
+Semantic environmental meaning therefore emerges from persistent
+behavioral telemetry rather than manual annotation.
+
+---
+
+## 3. Multi-Modal Occupancy Fusion Model
+
+Environmental occupancy supervision is implemented through
+weighted probabilistic score fusion rather than binary
+classification cascades.
+
+The global occupancy score:
+
+```math
+S_{bed}
+```
+
+is assembled from independent contextual evidence sources:
+
+```math
+S_{bed}
+=
+\omega_{yolo}
++
+B_{person}
++
+\omega_{vlm}
++
+B_{vlm}
++
+\omega_{parts}
++
+\omega_{inference}
++
+B_{animal}
+-
+P_{animal-only}
+```
+
+where:
+
+- `ω_yolo` represents direct human visual detection
+- `B_person` represents spatial prior human bonus
+- `ω_vlm` represents semantic VLM occupancy contribution
+- `B_vlm` represents VLM spatial consistency support
+- `ω_parts` represents segmented bed occupancy contribution
+- `ω_inference` represents deformable skeletal body inference
+- `B_animal` represents contextual animal interaction contribution
+- `P_animal-only` represents explicit pet-only occupancy penalty
+
+The bounded runtime score is clamped into:
+
+```math
+S_{bed} \in [0,1]
+```
+
+and evaluated against the operational occupancy threshold:
+
+```math
+S_{bed}
+>
+T_{occupancy}
+```
+
+where:
+
+```math
+T_{occupancy} = 0.55
+```
+
+The architecture intentionally avoids hard binary logic.
+
+Occupancy instead emerges from accumulated probabilistic
+environmental consistency.
+
+---
+
+## 4. Temporal Tracking and Asymmetric Confidence Decay
+
+Environmental trajectories are maintained through continuous
+runtime persistence supervision.
+
+Incoming detections:
+
+```math
+p_{det}
+```
+
+are associated with active trajectories:
+
+```math
+\tau_i
+```
+
+through bounded geometric matching:
+
+```math
+\delta(p_{det},p_{\tau_i})
+<
+D_{max}
+```
+
+where:
+
+```math
+D_{max} = 0.22
+```
+
+defines the maximum runtime association radius.
+
+### Visible Detection Update
+
+When a target remains visibly confirmed,
+trajectory confidence is updated through exponential smoothing:
+
+```math
+C_t
+=
+\beta C_{t-1}
++
+(1-\beta)\hat{C}_t
+```
+
+with smoothing factor:
+
+```math
+\beta = 0.65
+```
+
+### Occluded Target Decay
+
+When detections disappear due to:
+
+- blanket coverage
+- occlusions
+- lighting instability
+- fragmented detections
+
+trajectory confidence decays asymmetrically:
+
+```math
+C_t
+=
+\lambda C_{t-1}
+```
+
+where decay coefficient:
+
+```math
+\lambda
+```
+
+is dynamically modulated according to environmental
+macro-state consistency.
+
+This allows occupancy supervision to persist through
+short-lived visual instability.
+
+---
+
+## 5. Discrete State Hysteresis Pipeline
+
+The runtime output written into:
 
 ```text
 state/vesper_presence_state.json
 ```
 
-The generated runtime state may contain:
+is protected from rapid oscillation through a discrete
+frame-locked hysteresis state machine.
 
-- visible people count
-- animal count
-- probable hidden human presence
-- occupied rooms
-- occupied environmental zones
-- semantic activity interpretation
-- occupancy ambiguity estimation
-- temporal supervision metadata
-- persistent environmental continuity state
+Given a sequential occupancy history:
 
-Example conceptual runtime state:
-
-```json
-{
-  "home": {
-    "people_count": 0,
-    "animal_count": 2,
-    "visible_human_presence": false,
-    "possible_human_presence": true,
-    "bed_occupied_any": true,
-    "occupied_cameras": [
-      "room_1"
-    ],
-    "occupied_zones": [
-      "bed"
-    ]
-  }
-}
+```math
+X = \{x_{t-N},\dots,x_t\}
 ```
 
-The architecture intentionally separates:
+the stabilized runtime state:
 
-- directly visible human presence
-- probable hidden occupancy
-- ambiguous occupancy states
-- animal-only occupancy conditions
+```math
+Y_t \in \{0,1\}
+```
 
-rather than collapsing all environmental states into simplistic binary outputs.
+transitions only under bounded persistence constraints.
 
----
+### Occupancy Activation
 
-## 3. Persistent Spatial Memory
+Transition:
 
-Vesper Vision accumulates normalized environmental telemetry into persistent
-spatial memory structures.
+```math
+0 \rightarrow 1
+```
 
-Environmental detections are converted into long-term probabilistic spatial
-regions used for:
+requires:
 
-- occupancy persistence estimation
-- semantic environmental reconstruction
-- contextual confidence modulation
-- rare position detection
-- movement stabilization
-- environmental continuity supervision
+```math
+N_{enter} = 3
+```
 
-Spatial memory regions are reconstructed through accumulated telemetry density
-rather than manually predefined environmental maps.
+consecutive positive frames.
 
-The architecture intentionally prioritizes lightweight persistent memory
-reconstruction over computationally expensive scene-learning pipelines.
+### Occupancy Deactivation
 
----
+Transition:
 
-## 4. Semantic Region Reconstruction
+```math
+1 \rightarrow 0
+```
 
-Persistent spatial regions may progressively acquire semantic environmental
-interpretation through long-term telemetry accumulation.
+requires:
 
-The system may classify environmental regions into semantic categories such as:
+```math
+N_{exit} = 2
+```
 
-- bed presence core
-- rest area
-- kitchen activity region
-- table interaction region
-- window interaction region
-- generic presence region
+consecutive negative frames.
 
-Semantic interpretation emerges from environmental persistence patterns rather
-than explicit manual annotation.
+If neither transition constraint is satisfied,
+the runtime layer enforces state retention:
 
-This allows future detections to inherit contextual environmental meaning from
-previous long-term occupancy behavior.
+```math
+Y_t = Y_{t-1}
+```
 
-For example, a detected subject may be interpreted not only as a visible
-person, but also as:
+This mechanism suppresses:
 
-- resting
-- sleeping
-- interacting with windows
-- occupying a table area
-- remaining inside a persistent bed-presence region
+- detector oscillation
+- false-negative collapse
+- unstable automation triggers
+- environmental state bouncing
 
-depending on reconstructed environmental semantics.
+while preserving temporal continuity.
 
 ---
 
-## 5. Hidden Occupancy and Ambiguity Handling
-
-Direct visual visibility is not always sufficient for environmental occupancy
-supervision.
-
-In bedroom scenarios, occupancy may remain partially hidden due to:
-
-- blankets
-- occlusions
-- low motion persistence
-- body overlap
-- partial visibility
-- environmental lighting instability
-
-To reduce false-negative occupancy collapse, Vesper Vision combines:
-
-- pose estimation
-- bed occupancy supervision
-- visual-language interpretation
-- bed-part occupancy estimation
-- spatial persistence analysis
-- temporal continuity
-- contextual fusion supervision
-
-The runtime layer therefore supports probabilistic hidden occupancy estimation.
-
-The system may distinguish between states such as:
-
-- visible person present
-- probable covered person
-- ambiguous bed occupancy
-- animal-only occupancy
-- environmental uncertainty
-- no confirmed human presence
-
-This avoids simplistic occupancy interpretation while preserving explainable
-runtime reasoning.
-
----
-
-## 6. Temporal Environmental Continuity
-
-Environmental occupancy is supervised continuously over time.
-
-The runtime layer maintains:
-
-- occupancy persistence
-- state hysteresis
-- temporal confidence stabilization
-- environmental continuity reconstruction
-- probabilistic transition supervision
-
-This prevents rapid environmental oscillation caused by:
-
-- temporary occlusions
-- unstable detections
-- pose interruptions
-- partial frame corruption
-- short-lived confidence collapse
-
-The temporal supervision layer therefore behaves as a bounded environmental
-continuity model rather than a stateless detector.
-
----
-
-## 7. Runtime Design Goals
+## 6. Runtime Design Goals
 
 The runtime supervision architecture intentionally prioritizes:
 
 - explainable occupancy reasoning
-- deterministic runtime supervision
-- modular environmental interpretation
-- persistent environmental continuity
+- deterministic environmental supervision
+- semantic environmental understanding
+- persistent contextual continuity
 - automation-ready runtime outputs
-- semantic environmental reconstruction
-- bounded contextual inference
-- probabilistic but interpretable supervision
+- bounded probabilistic inference
+- privacy-preserving environmental cognition
 
-over opaque black-box behavioral analysis systems.
+The system intentionally avoids:
 
-The architecture focuses on environmental understanding rather than biometric
-identity recognition or invasive surveillance-oriented profiling.
+- facial recognition
+- biometric profiling
+- identity classification
+- invasive surveillance logic
+
+Environmental reasoning is therefore modeled as contextual
+environmental interpretation rather than identity-centric tracking.
 
 ---
 
-## 8. Limitations
+## 7. Limitations and Environmental Ambiguity
 
-The runtime supervision layer remains an approximate environmental reasoning
-system.
+The runtime layer remains a probabilistic environmental
+reasoning system.
 
-Accuracy may be affected by:
+Accuracy may degrade under:
 
-- incomplete visual coverage
-- extreme occlusions
-- unstable environmental lighting
-- ambiguous blanket deformation
+- strong backlighting
+- blanket deformation
 - animal-human overlap
-- incorrect semantic region reconstruction
-- fragmented occupancy persistence
-- unstable telemetry continuity
-- environmental perspective distortion
-- insufficient long-term telemetry density
+- partial occlusions
+- reflective surfaces
+- fragmented telemetry continuity
+- unstable lighting
+- motion blur
+- incomplete environmental visibility
 
-The generated runtime state should therefore be interpreted as a probabilistic
-environmental supervision layer rather than an absolute representation of
-physical reality.
+Instead of forcing deterministic outputs under ambiguous
+conditions, the architecture explicitly propagates bounded
+environmental uncertainty through probabilistic confidence decay
+and ambiguity-aware supervision.
+
+The generated runtime state should therefore be interpreted as:
+
+- contextual
+- probabilistic
+- explainable
+- environmentally constrained
+
+rather than an absolute representation of physical reality.
