@@ -78,10 +78,10 @@ Example conceptual runtime state:
     "possible_human_presence": true,
     "bed_occupied_any": true,
     "occupied_cameras": [
-      "camera da letto"
+      "room_1"
     ],
     "occupied_zones": [
-      "letto"
+      "bed"
     ]
   }
 }
