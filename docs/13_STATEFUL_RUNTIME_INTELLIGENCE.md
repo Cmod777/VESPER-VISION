@@ -5,31 +5,34 @@
 This module documents the stateful runtime supervision layer used by
 Vesper Vision for continuous environmental occupancy estimation,
 persistent spatial memory mapping, semantic context extraction,
-and structural state fusion.
+and structural runtime state fusion.
 
-Instead of computing isolated frame-by-frame detections, the runtime
-architecture maintains a continuously evolving environmental hypothesis layer.
+Instead of processing isolated frame-by-frame detections, the runtime
+architecture maintains a continuously evolving environmental hypothesis layer
+capable of preserving occupancy continuity across unstable visual conditions.
 
 The system combines:
 
 - geometric spatial priors
 - persistent telemetry accumulation
-- semantic region synthesis
+- spatial clustering
+- semantic region reconstruction
 - multi-modal occupancy fusion
-- asymmetric temporal decay
-- runtime state hysteresis
-- contextual environmental continuity
+- asymmetric confidence decay
+- frame-locked state hysteresis
+- contextual environmental ambiguity handling
 
 to preserve explainable occupancy supervision even under:
 
-- partial occlusions
 - blanket coverage
+- partial visibility
 - unstable detections
-- fragmented visibility
+- fragmented telemetry
 - environmental ambiguity
+- temporary occlusions
 
-Unlike stateless visual pipelines, the runtime layer models occupancy
-as a persistent environmental reasoning process rather than a single-frame
+Unlike stateless visual pipelines, the runtime layer models occupancy as a
+persistent environmental reasoning process rather than a single-frame
 classification event.
 
 ---
@@ -43,15 +46,12 @@ accumulation inside the runtime spatial event journal:
 state/spatial_memory_events.jsonl
 ```
 
-Every validated environmental observation generates a normalized spatial
-coordinate:
+Every validated environmental observation generates a normalized tracking
+coordinate projected into the environmental memory plane:
 
 ```math
 p = [x,y]^T \in [0,1]^2
 ```
-
-where normalized coordinates are projected directly into the environmental
-spatial memory plane.
 
 Given a historical telemetry sequence:
 
@@ -59,8 +59,8 @@ Given a historical telemetry sequence:
 E = \{e_1,e_2,\dots,e_N\}
 ```
 
-the localized spatial density prior surrounding coordinate `p`
-is computed using a fixed-radius neighbor accumulation model:
+the localized spatial density prior surrounding coordinate `p` is computed
+using a fixed-radius neighbor accumulation model:
 
 ```math
 D(p)
@@ -89,27 +89,24 @@ The spatial integration radius:
 R_{prior} = 0.075
 ```
 
-defines the maximum local influence boundary used during
-runtime density estimation.
+defines the maximum local influence boundary used during runtime density
+estimation.
 
-The indicator function:
+The resulting density field dynamically injects contextual confidence bias
+into occupancy reasoning pipelines.
 
-```math
-\mathbb{I}(\cdot)
-```
+---
 
-returns `1` when the geometric constraint is satisfied
-and `0` otherwise.
+![Persistent spatial memory](assets/Spatial_memory.png)
 
-The resulting density scalar dynamically injects contextual
-confidence bias into occupancy reasoning pipelines.
+*Long-term spatial memory reconstructed through persistent environmental telemetry accumulation and probabilistic occupancy density reinforcement.*
 
 ---
 
 ## 2. Spatial Clustering and Semantic Synthesis
 
-Long-term environmental interaction patterns are transformed into
-persistent semantic regions through sequential geometric clustering.
+Long-term environmental interaction patterns are transformed into persistent
+spatial regions through sequential geometric clustering.
 
 A coordinate:
 
@@ -117,7 +114,7 @@ A coordinate:
 p_i
 ```
 
-is aggregated into spatial cluster:
+is aggregated into cluster:
 
 ```math
 \mathcal{C}_k
@@ -137,15 +134,14 @@ where:
 R_{cluster} = 0.065
 ```
 
-defines the maximum aggregation radius surrounding
-cluster centroid:
+defines the maximum aggregation radius surrounding cluster centroid:
 
 ```math
 \mu_k
 ```
 
-If no cluster satisfies the geometric constraint,
-a new semantic seed region is generated.
+If no cluster satisfies the geometric constraint, a new spatial seed region is
+generated.
 
 Clusters collecting fewer than:
 
@@ -153,8 +149,8 @@ Clusters collecting fewer than:
 M_{min} = 12
 ```
 
-validated observations are discarded to suppress
-environmental noise propagation.
+validated observations are discarded to suppress environmental noise
+propagation.
 
 The spatial center of mass for validated regions is computed as:
 
@@ -166,7 +162,21 @@ The spatial center of mass for validated regions is computed as:
 p_i
 ```
 
-This process allows the runtime layer to progressively reconstruct:
+This clustering layer extracts spatial structure from accumulated occupancy
+telemetry before semantic interpretation is applied.
+
+---
+
+![Environmental spatial clustering](assets/Scanner.png)
+
+*Sequential environmental clustering and probabilistic spatial region synthesis reconstructed from long-term occupancy telemetry.*
+
+---
+
+After spatial clusters are reconstructed, persistent behavioral patterns are
+used to synthesize semantic environmental meaning.
+
+The runtime layer can progressively identify:
 
 - bed-presence regions
 - kitchen activity areas
@@ -175,16 +185,21 @@ This process allows the runtime layer to progressively reconstruct:
 - window interaction corridors
 - movement transition paths
 
-Semantic environmental meaning therefore emerges from persistent
-behavioral telemetry rather than manual annotation.
+Semantic environmental meaning therefore emerges from persistent behavioral
+telemetry rather than manual annotation.
+
+---
+
+![Semantic environmental reconstruction](assets/Semantic.png)
+
+*Semantic environmental regions reconstructed through persistent behavioral observation, contextual interaction patterns, and long-term occupancy consistency.*
 
 ---
 
 ## 3. Multi-Modal Occupancy Fusion Model
 
-Environmental occupancy supervision is implemented through
-weighted probabilistic score fusion rather than binary
-classification cascades.
+Environmental occupancy supervision is implemented through weighted
+probabilistic score fusion rather than binary classification cascades.
 
 The global occupancy score:
 
@@ -245,17 +260,21 @@ where:
 T_{occupancy} = 0.55
 ```
 
-The architecture intentionally avoids hard binary logic.
+Occupancy therefore emerges from accumulated probabilistic environmental
+consistency rather than hard binary logic.
 
-Occupancy instead emerges from accumulated probabilistic
-environmental consistency.
+---
+
+![Body reconstruction and occupancy fusion](assets/Body_reconstruction.png)
+
+*Probabilistic body reconstruction and multimodal occupancy fusion combining thermal, depth, radar, skeletal inference, and contextual confidence supervision.*
 
 ---
 
 ## 4. Temporal Tracking and Asymmetric Confidence Decay
 
-Environmental trajectories are maintained through continuous
-runtime persistence supervision.
+Environmental trajectories are maintained through continuous runtime
+persistence supervision.
 
 Incoming detections:
 
@@ -287,8 +306,8 @@ defines the maximum runtime association radius.
 
 ### Visible Detection Update
 
-When a target remains visibly confirmed,
-trajectory confidence is updated through exponential smoothing:
+When a target remains visibly confirmed, trajectory confidence is updated
+through exponential smoothing:
 
 ```math
 C_t
@@ -309,7 +328,7 @@ with smoothing factor:
 When detections disappear due to:
 
 - blanket coverage
-- occlusions
+- partial occlusions
 - lighting instability
 - fragmented detections
 
@@ -327,11 +346,16 @@ where decay coefficient:
 \lambda
 ```
 
-is dynamically modulated according to environmental
-macro-state consistency.
+is dynamically modulated according to environmental macro-state consistency.
 
-This allows occupancy supervision to persist through
-short-lived visual instability.
+This allows occupancy supervision to persist through short-lived visual
+instability.
+
+---
+
+![Temporal continuity supervision](assets/Temporal.png)
+
+*Temporal occupancy continuity preserving stable runtime interpretation across fragmented detections, temporary occlusions, and detector instability.*
 
 ---
 
@@ -343,8 +367,8 @@ The runtime output written into:
 state/vesper_presence_state.json
 ```
 
-is protected from rapid oscillation through a discrete
-frame-locked hysteresis state machine.
+is protected from rapid oscillation through a discrete frame-locked hysteresis
+state machine.
 
 Given a sequential occupancy history:
 
@@ -392,21 +416,27 @@ N_{exit} = 2
 
 consecutive negative frames.
 
-If neither transition constraint is satisfied,
-the runtime layer enforces state retention:
+If neither transition condition is satisfied, the runtime layer enforces state
+retention:
 
 ```math
 Y_t = Y_{t-1}
 ```
 
-This mechanism suppresses:
+This suppresses:
 
 - detector oscillation
 - false-negative collapse
 - unstable automation triggers
 - environmental state bouncing
 
-while preserving temporal continuity.
+while preserving contextual occupancy continuity.
+
+---
+
+![Persistent runtime continuity](assets/Persistence.png)
+
+*Persistent occupancy continuity preserved through temporal hysteresis, contextual persistence tracking, and ambiguity-aware runtime supervision.*
 
 ---
 
@@ -429,15 +459,14 @@ The system intentionally avoids:
 - identity classification
 - invasive surveillance logic
 
-Environmental reasoning is therefore modeled as contextual
-environmental interpretation rather than identity-centric tracking.
+Environmental reasoning is therefore modeled as contextual environmental
+interpretation rather than identity-centric tracking.
 
 ---
 
 ## 7. Limitations and Environmental Ambiguity
 
-The runtime layer remains a probabilistic environmental
-reasoning system.
+The runtime layer remains a probabilistic environmental reasoning system.
 
 Accuracy may degrade under:
 
@@ -451,10 +480,9 @@ Accuracy may degrade under:
 - motion blur
 - incomplete environmental visibility
 
-Instead of forcing deterministic outputs under ambiguous
-conditions, the architecture explicitly propagates bounded
-environmental uncertainty through probabilistic confidence decay
-and ambiguity-aware supervision.
+Instead of forcing deterministic outputs under ambiguous conditions, the
+architecture explicitly propagates bounded environmental uncertainty through
+probabilistic confidence decay and ambiguity-aware supervision.
 
 The generated runtime state should therefore be interpreted as:
 
@@ -464,3 +492,9 @@ The generated runtime state should therefore be interpreted as:
 - environmentally constrained
 
 rather than an absolute representation of physical reality.
+
+---
+
+![Runtime design goals and ambiguity handling](assets/Runtime.png)
+
+*Explainable environmental intelligence combining privacy-preserving runtime cognition, contextual automation, and ambiguity-aware environmental supervision.*
